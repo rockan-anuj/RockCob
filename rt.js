@@ -1,5 +1,39 @@
 
 (() => {
+  try {
+    const leanbackKey = 'yt.leanback.default::recurring_actions';
+    const leanbackStr = localStorage.getItem(leanbackKey);
+    
+    if (leanbackStr) {
+      const actions = JSON.parse(leanbackStr);
+      // Set the "last fired" time to 7 days in the future to prevent the prompt
+      const futureDate = Date.now() + (7 * 24 * 60 * 60 * 1000); 
+
+      const targetKeys = [
+        "startup-screen-account-selector-with-guest",
+        "whos_watching_fullscreen_zero_accounts",
+        "startup-screen-signed-out-welcome-back"
+      ];
+
+      let modified = false;
+      if (actions?.data?.data) {
+        targetKeys.forEach(key => {
+          if (actions.data.data[key]) {
+            actions.data.data[key].lastFired = futureDate;
+            modified = true;
+          }
+        });
+      }
+
+      if (modified) {
+        localStorage.setItem(leanbackKey, JSON.stringify(actions));
+        console.log("Who is watching prompts disabled");
+      }
+    }
+  } catch (e) {
+    console.error("Error modifying recurring actions:", e);
+  }
+  
   const origParse = JSON.parse;
 
   JSON.parse = function (...args) {
