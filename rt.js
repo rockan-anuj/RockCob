@@ -388,7 +388,36 @@
   boot();
 })();
 
+// === Dark Professional Gradient for #container ===
+(() => {
+  const applyGradient = () => {
+    const el = document.getElementById("container");
+    if (!el) {
+      console.warn("Element with id 'container' not found.");
+      return false;
+    }
 
+    // Main dark gradient (TV-style)
+    el.style.background = `
+      linear-gradient(
+        90deg,
+        #0f0f0f 20%,
+        #161b22 45%,
+#24283b 65%,
+#2f2438 100%
+      )
+    `;
+    return true;
+  };
+
+  // Retry if DOM not ready
+  if (!applyGradient()) {
+    const observer = new MutationObserver(() => {
+      if (applyGradient()) observer.disconnect();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();
 
 
 
