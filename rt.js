@@ -383,9 +383,6 @@
 
     // Convenience: you can call this manually anytime
     window.ttSpeedSettings = speedSettings;
-
-    // Open menu immediately once
-    speedSettings();
   };
 
   boot();
