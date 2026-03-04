@@ -1,39 +1,5 @@
 
 (() => {
-  try {
-    const leanbackKey = 'yt.leanback.default::recurring_actions';
-    const leanbackStr = localStorage.getItem(leanbackKey);
-    
-    if (leanbackStr) {
-      const actions = JSON.parse(leanbackStr);
-      // Set the "last fired" time to 7 days in the future to prevent the prompt
-      const futureDate = Date.now() + (7 * 24 * 60 * 60 * 1000); 
-
-      const targetKeys = [
-        "startup-screen-account-selector-with-guest",
-        "whos_watching_fullscreen_zero_accounts",
-        "startup-screen-signed-out-welcome-back"
-      ];
-
-      let modified = false;
-      if (actions?.data?.data) {
-        targetKeys.forEach(key => {
-          if (actions.data.data[key]) {
-            actions.data.data[key].lastFired = futureDate;
-            modified = true;
-          }
-        });
-      }
-
-      if (modified) {
-        localStorage.setItem(leanbackKey, JSON.stringify(actions));
-        console.log("Who is watching prompts disabled");
-      }
-    }
-  } catch (e) {
-    console.error("Error modifying recurring actions:", e);
-  }
-  
   const origParse = JSON.parse;
 
   JSON.parse = function (...args) {
@@ -96,6 +62,41 @@
     }
   }
 })();
+
+
+// for watching menu
+(() => {
+  const KEY = "yt.leanback.default::recurring_actions";
+  const raw = localStorage.getItem(KEY);
+  if (!raw) throw new Error(`Missing localStorage key: ${KEY}`);
+
+  let obj;
+  try {
+    obj = JSON.parse(raw);
+  } catch {
+    throw new Error(`Could not parse ${KEY}`);
+  }
+
+  const data = obj?.data?.data;
+  if (!data) throw new Error(`Unexpected ${KEY} structure`);
+
+  const now = Date.now();
+  const days = 7; // project sets ~7 days ahead
+  const future = now + days * 24 * 60 * 60 * 1000;
+
+  const setLastFired = (k) => {
+    if (data[k] && typeof data[k] === "object") data[k].lastFired = future;
+  };
+
+  setLastFired("startup-screen-account-selector-with-guest");
+  setLastFired("whos_watching_fullscreen_zero_accounts");
+  setLastFired("startup-screen-signed-out-welcome-back");
+
+  localStorage.setItem(KEY, JSON.stringify(obj));
+  console.log("Done: pushed Who’s watching recurring actions out by", days, "days. Reload the page.");
+})();
+
+
 
 
 
