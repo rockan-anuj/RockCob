@@ -8,7 +8,6 @@
     if (r?.adPlacements) r.adPlacements = [];
     if (r?.adSlots) r.adSlots = [];
     if (r?.playerAds) r.playerAds = false;
-    console.log("Add removed");
     // Endscreen cards
     if (r?.endscreen) r.endscreen = null;
 
