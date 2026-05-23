@@ -8,6 +8,7 @@
     if (r?.adPlacements) r.adPlacements = [];
     if (r?.adSlots) r.adSlots = [];
     if (r?.playerAds) r.playerAds = false;
+    console.log("Add removed");
     // Endscreen cards
     if (r?.endscreen) r.endscreen = null;
 
@@ -244,14 +245,12 @@
   const setSliderUI = (colEl, dbVal) => {
     const valueEl = colEl.querySelector(".tt-eq-value");
     const fillEl = colEl.querySelector(".tt-eq-slider-fill");
-    const thumbEl = colEl.querySelector(".tt-eq-slider-thumb");
     
     const formatted = dbVal > 0 ? `+${dbVal} dB` : `${dbVal} dB`;
     valueEl.textContent = formatted;
     
     const pct = ((dbVal + 12) / 24) * 100;
     fillEl.style.height = `${pct}%`;
-    thumbEl.style.bottom = `${pct}%`;
   };
 
   const updateBandGain = (idx, dbVal) => {
@@ -344,12 +343,8 @@
 
   const closeCustomEqualizerPanel = () => {
     if (!eqPanelEl) return;
-    eqPanelEl.style.opacity = "0";
-    eqPanelEl.style.transform = "translateY(20px)";
-    setTimeout(() => {
-      eqPanelEl.style.display = "none";
-      document.removeEventListener("keydown", handleEqualizerKeyboard, true);
-    }, 250);
+    eqPanelEl.style.display = "none";
+    document.removeEventListener("keydown", handleEqualizerKeyboard, true);
   };
 
   const showCustomEqualizerPanel = () => {
@@ -370,140 +365,110 @@
           bottom: 80px;
           right: 80px;
           width: 480px;
-          background: rgba(15, 15, 15, 0.9);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 20px;
+          background: #0f0f0f;
+          border: 2px solid #2d2d2d;
+          border-radius: 8px;
           padding: 24px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
           z-index: 9999999;
           color: #fff;
           font-family: 'Roboto', 'Inter', sans-serif;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
+          display: block;
           box-sizing: border-box;
-          transition: opacity 0.25s ease, transform 0.25s ease;
         }
         .tt-eq-header {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
+          display: block;
+          margin-bottom: 20px;
         }
         .tt-eq-title {
           font-size: 20px;
           font-weight: 700;
           letter-spacing: 0.5px;
-          color: #f1f5f9;
+          color: #ffffff;
+          margin-bottom: 4px;
         }
         .tt-eq-subtitle {
           font-size: 13px;
-          color: #94a3b8;
+          color: #aaaaaa;
         }
-        .tt-eq-sliders-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
-          height: 180px;
+        .tt-eq-table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
         }
         .tt-eq-col {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
-          flex: 1;
-          padding: 10px 4px;
-          border-radius: 12px;
-          transition: background 0.2s ease;
-          cursor: pointer;
+          border: 2px solid transparent;
+          border-radius: 6px;
+          padding: 12px 4px;
+          text-align: center;
+          background: transparent;
         }
         .tt-eq-col.focused {
-          background: rgba(255, 255, 255, 0.08);
+          background: #2a2a2a;
+          border-color: #ffffff;
         }
         .tt-eq-value {
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 600;
-          color: #94a3b8;
-          width: 50px;
+          color: #aaaaaa;
+          margin-bottom: 12px;
           text-align: center;
         }
         .tt-eq-col.focused .tt-eq-value {
-          color: #38bdf8;
+          color: #ffffff;
           font-weight: 700;
         }
         .tt-eq-slider-container {
           position: relative;
-          width: 20px;
-          height: 110px;
-          display: flex;
-          justify-content: center;
-        }
-        .tt-eq-slider-track {
-          position: absolute;
-          width: 6px;
-          height: 100%;
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 3px;
-        }
-        .tt-eq-col.focused .tt-eq-slider-track {
-          background: rgba(255, 255, 255, 0.25);
+          width: 8px;
+          height: 120px;
+          background: #333333;
+          margin: 0 auto;
+          border-radius: 4px;
         }
         .tt-eq-slider-fill {
           position: absolute;
           bottom: 0;
-          width: 6px;
-          background: linear-gradient(180deg, #38bdf8, #818cf8);
-          border-radius: 3px;
+          left: 0;
+          width: 100%;
+          background: #888888;
+          border-radius: 4px;
         }
         .tt-eq-col.focused .tt-eq-slider-fill {
-          background: linear-gradient(180deg, #00f2fe, #4facfe);
-          box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
-        }
-        .tt-eq-slider-thumb {
-          position: absolute;
-          width: 14px;
-          height: 14px;
-          background: #fff;
-          border-radius: 50%;
-          left: 50%;
-          transform: translate(-50%, 50%);
-          bottom: 50%;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-        }
-        .tt-eq-col.focused .tt-eq-slider-thumb {
-          background: #00f2fe;
-          box-shadow: 0 0 12px #00f2fe;
+          background: #ff0000;
         }
         .tt-eq-label {
           font-size: 12px;
           font-weight: 500;
-          color: #64748b;
+          color: #888888;
+          margin-top: 12px;
+          text-align: center;
         }
         .tt-eq-col.focused .tt-eq-label {
-          color: #f1f5f9;
+          color: #ffffff;
           font-weight: 700;
         }
         .tt-eq-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          margin-top: 20px;
+          border-top: 1px solid #2d2d2d;
           padding-top: 12px;
+          display: block;
+          overflow: hidden;
         }
         .tt-eq-preset-badge {
+          float: left;
           font-size: 11px;
-          background: rgba(56, 189, 248, 0.15);
-          color: #38bdf8;
+          background: #2a2a2a;
+          color: #ff0000;
           padding: 4px 8px;
-          border-radius: 20px;
+          border-radius: 4px;
           font-weight: 600;
-          border: 1px solid rgba(56, 189, 248, 0.3);
+          border: 1px solid #333333;
         }
         .tt-eq-help-text {
+          float: right;
           font-size: 11px;
-          color: #64748b;
+          color: #aaaaaa;
+          line-height: 22px;
         }
       `;
       document.head.appendChild(style);
@@ -526,11 +491,12 @@
       header.appendChild(subtitle);
       eqPanelEl.appendChild(header);
 
-      const row = document.createElement("div");
-      row.className = "tt-eq-sliders-row";
+      const table = document.createElement("table");
+      table.className = "tt-eq-table";
+      const tr = document.createElement("tr");
 
       BANDS.forEach((freq, idx) => {
-        const col = document.createElement("div");
+        const col = document.createElement("td");
         col.className = "tt-eq-col";
         col.setAttribute("data-idx", idx);
 
@@ -542,17 +508,9 @@
         const container = document.createElement("div");
         container.className = "tt-eq-slider-container";
 
-        const track = document.createElement("div");
-        track.className = "tt-eq-slider-track";
-        container.appendChild(track);
-
         const fill = document.createElement("div");
         fill.className = "tt-eq-slider-fill";
         container.appendChild(fill);
-
-        const thumb = document.createElement("div");
-        thumb.className = "tt-eq-slider-thumb";
-        container.appendChild(thumb);
 
         col.appendChild(container);
 
@@ -561,9 +519,10 @@
         label.textContent = freq >= 1000 ? `${freq / 1000} kHz` : `${freq} Hz`;
         col.appendChild(label);
 
-        row.appendChild(col);
+        tr.appendChild(col);
       });
-      eqPanelEl.appendChild(row);
+      table.appendChild(tr);
+      eqPanelEl.appendChild(table);
 
       const footer = document.createElement("div");
       footer.className = "tt-eq-footer";
@@ -607,14 +566,7 @@
       setSliderUI(col, dbVal);
     });
 
-    eqPanelEl.style.opacity = "0";
-    eqPanelEl.style.transform = "translateY(20px)";
-    eqPanelEl.style.display = "flex";
-    
-    eqPanelEl.offsetHeight; // trigger reflow
-    
-    eqPanelEl.style.opacity = "1";
-    eqPanelEl.style.transform = "translateY(0)";
+    eqPanelEl.style.display = "block";
 
     activeColIdx = 0;
     updateFocus();
