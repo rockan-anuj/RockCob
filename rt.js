@@ -390,16 +390,21 @@
           font-size: 13px;
           color: #aaaaaa;
         }
-        .tt-eq-table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
+        .tt-eq-sliders-row {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
         }
         .tt-eq-col {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex: 1;
+          padding: 12px 4px;
           border: 2px solid transparent;
           border-radius: 6px;
-          padding: 12px 4px;
-          text-align: center;
           background: transparent;
         }
         .tt-eq-col.focused {
@@ -451,11 +456,12 @@
           margin-top: 20px;
           border-top: 1px solid #2d2d2d;
           padding-top: 12px;
-          display: block;
-          overflow: hidden;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
         }
         .tt-eq-preset-badge {
-          float: left;
           font-size: 11px;
           background: #2a2a2a;
           color: #ff0000;
@@ -465,10 +471,8 @@
           border: 1px solid #333333;
         }
         .tt-eq-help-text {
-          float: right;
           font-size: 11px;
           color: #aaaaaa;
-          line-height: 22px;
         }
       `;
       document.head.appendChild(style);
@@ -491,12 +495,11 @@
       header.appendChild(subtitle);
       eqPanelEl.appendChild(header);
 
-      const table = document.createElement("table");
-      table.className = "tt-eq-table";
-      const tr = document.createElement("tr");
+      const row = document.createElement("div");
+      row.className = "tt-eq-sliders-row";
 
       BANDS.forEach((freq, idx) => {
-        const col = document.createElement("td");
+        const col = document.createElement("div");
         col.className = "tt-eq-col";
         col.setAttribute("data-idx", idx);
 
@@ -519,10 +522,9 @@
         label.textContent = freq >= 1000 ? `${freq / 1000} kHz` : `${freq} Hz`;
         col.appendChild(label);
 
-        tr.appendChild(col);
+        row.appendChild(col);
       });
-      table.appendChild(tr);
-      eqPanelEl.appendChild(table);
+      eqPanelEl.appendChild(row);
 
       const footer = document.createElement("div");
       footer.className = "tt-eq-footer";
