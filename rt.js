@@ -905,7 +905,7 @@
           align-items: center;
           justify-content: center;
           background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(24px);
+          backdrop-filter: blur(44px);
           -webkit-backdrop-filter: blur(44px);
           transition: opacity 0.4s ease;
           overflow: hidden;
