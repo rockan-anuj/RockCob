@@ -8,6 +8,7 @@
     if (r?.adPlacements) r.adPlacements = [];
     if (r?.adSlots) r.adSlots = [];
     if (r?.playerAds) r.playerAds = false;
+    console.log("Add removed");
     // Endscreen cards
     if (r?.endscreen) r.endscreen = null;
 
@@ -132,7 +133,7 @@
   // === Equalizer Config & Presets ===
   const PRESETS = {
     "Flat / Normal": [0, 0, 0, 0, 0],
-    "Bass Booster": [8, 6, 2, 0, 0],
+    "Bass Booster": [6, 4, 0, 0, 0],
     "Vocal Booster": [-2, 0, 4, 3, 1],
     "Clear Dialogue": [-4, -2, 5, 4, 2],
     "Movie / Cinema": [5, 2, -1, 2, 4],
@@ -780,10 +781,6 @@
             showCustomEqualizerPanel();
             return true;
           }
-          if (maybeCustom.action === "TT_MUSIC_MODE_TOGGLE") {
-            toggleMusicMode();
-            return true;
-          }
         }
 
         // Patch playback settings popup to insert equalizer item below speed item
@@ -826,21 +823,6 @@
                 items.push(eqBtn);
               }
             }
-
-            // Insert Music Mode item
-            const hasMM = items.some(item => item?.compactLinkRenderer?.title?.simpleText === "Music Mode");
-            if (!hasMM) {
-              const mmActive = !!window.__ttMusicModeOn;
-              const mmBtn = buttonItem(
-                { title: "Music Mode", subtitle: mmActive ? "On — tap to exit" : "Hide video, show visualizer" },
-                { icon: "QUEUE_MUSIC" },
-                [
-                  { signalAction: { signal: "POPUP_BACK" } },
-                  { customAction: { action: "TT_MUSIC_MODE_TOGGLE", parameters: [] } }
-                ]
-              );
-              items.push(mmBtn);
-            }
           } catch {}
         }
 
@@ -864,8 +846,6 @@
               applyPreset(ca.parameters);
             } else if (ca?.action === "TT_CUSTOM_EQ_SHOW") {
               showCustomEqualizerPanel();
-            } else if (ca?.action === "TT_MUSIC_MODE_TOGGLE") {
-              toggleMusicMode();
             } else {
               original.call(this, c, _);
             }
@@ -881,193 +861,6 @@
     }
     return false;
   };
-
-  // === Music Mode ===
-  let musicModeActive = false;
-  let musicModeOverlay = null;
-
-  const buildMusicOverlay = (parent) => {
-    if (getComputedStyle(parent).position === "static") {
-      parent.style.position = "relative";
-    }
-
-    if (!document.getElementById("tt-music-mode-styles")) {
-      const style = document.createElement("style");
-      style.id = "tt-music-mode-styles";
-      style.textContent = `
-        #tt-music-overlay {
-          position: absolute;
-          inset: 0;
-          width: 100vw;
-          height: 100vh;
-          z-index: 9999998;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(44px);
-          -webkit-backdrop-filter: blur(44px);
-          transition: opacity 0.4s ease;
-          overflow: hidden;
-          pointer-events: none;
-        }
-        #tt-music-text {
-          color: rgba(255, 255, 255, 0.95);
-          font-family: 'Roboto', 'Inter', sans-serif;
-          font-size: 32px;
-          font-weight: 600;
-          letter-spacing: 2px;
-          text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
-          pointer-events: none;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    const overlay = document.createElement("div");
-    overlay.id = "tt-music-overlay";
-
-    const text = document.createElement("div");
-    text.id = "tt-music-text";
-    text.textContent = "Music Mode";
-    overlay.appendChild(text);
-
-    parent.appendChild(overlay);
-    return overlay;
-  };
-
-  const toggleMusicMode = () => {
-    musicModeActive = !musicModeActive;
-    window.__ttMusicModeOn = musicModeActive;
-
-    const video = document.querySelector("video");
-
-    if (musicModeActive) {
-      const parent = video ? video.parentElement : document.body;
-
-      if (!musicModeOverlay || !document.body.contains(musicModeOverlay)) {
-        musicModeOverlay = buildMusicOverlay(parent);
-      }
-
-      musicModeOverlay.style.opacity = "0";
-      musicModeOverlay.style.display = "flex";
-      requestAnimationFrame(() => { musicModeOverlay.style.opacity = "1"; });
-
-      updateMusicButtonUI();
-      console.log("Music Mode: ON");
-    } else {
-      if (musicModeOverlay) {
-        musicModeOverlay.style.opacity = "0";
-        setTimeout(() => {
-          if (musicModeOverlay && musicModeOverlay.parentElement) {
-            musicModeOverlay.parentElement.removeChild(musicModeOverlay);
-          }
-          musicModeOverlay = null;
-        }, 400);
-      }
-      updateMusicButtonUI();
-      console.log("Music Mode: OFF");
-    }
-  };
-
-  // === Dynamic Toolbar Music Mode Button (next to dislike-button) ===
-  const updateMusicButtonUI = () => {
-    const btn = document.getElementById("tt-music-mode-btn");
-    if (!btn) return;
-    const isMusicActive = !!window.__ttMusicModeOn;
-    const label = isMusicActive ? "Exit Music Mode" : "Music Mode";
-    btn.setAttribute("aria-label", label);
-    btn.setAttribute("title", label);
-    const container = btn.querySelector("yt-button-container");
-    if (container) {
-      container.setAttribute("aria-label", label);
-      container.setAttribute("aria-pressed", isMusicActive ? "true" : "false");
-    }
-    const svg = btn.querySelector("svg");
-    if (svg) {
-      svg.style.fill = isMusicActive ? "#ff4081" : "currentColor";
-    }
-  };
-
-  const injectMusicModeButton = () => {
-    if (document.getElementById("tt-music-mode-btn")) return;
-
-    const dislikeBtn = document.querySelector('yt-icon-button[idomkey="dislike-button"]') ||
-                       document.querySelector('[idomkey="dislike-button"]');
-    if (!dislikeBtn) return;
-
-    const target = dislikeBtn.closest("yt-icon-button") || dislikeBtn;
-    if (!target || !target.parentElement) return;
-
-    if (target.parentElement.querySelector("#tt-music-mode-btn")) return;
-
-    const musicBtn = target.cloneNode(true);
-    musicBtn.id = "tt-music-mode-btn";
-    musicBtn.removeAttribute("idomkey");
-    musicBtn.setAttribute("aria-label", "Music Mode");
-    musicBtn.setAttribute("title", "Music Mode");
-
-    // Clean idomkey from cloned subtree
-    musicBtn.querySelectorAll("[idomkey]").forEach(el => el.removeAttribute("idomkey"));
-
-    const btnContainer = musicBtn.querySelector("yt-button-container");
-    if (btnContainer) {
-      btnContainer.setAttribute("aria-label", "Music Mode");
-      btnContainer.setAttribute("hybridnavfocusable", "true");
-      btnContainer.setAttribute("aria-pressed", window.__ttMusicModeOn ? "true" : "false");
-    }
-
-    // Replace icon with music note SVG (no innerHTML, CSP-safe)
-    const icon = musicBtn.querySelector("yt-icon");
-    if (icon) {
-      icon.className = "ieYpu nGYLgf";
-      icon.style.display = "flex";
-      icon.style.alignItems = "center";
-      icon.style.justifyContent = "center";
-      while (icon.firstChild) icon.removeChild(icon.firstChild);
-
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      svg.style.width = "1.8rem";
-      svg.style.height = "1.8rem";
-      svg.style.fill = window.__ttMusicModeOn ? "#ff4081" : "currentColor";
-      svg.style.display = "block";
-
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z");
-      svg.appendChild(path);
-      icon.appendChild(svg);
-    }
-
-    const onActivate = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleMusicMode();
-    };
-
-    musicBtn.addEventListener("click", onActivate);
-    musicBtn.addEventListener("keydown", (e) => {
-      if (e.keyCode === 13 || e.keyCode === 32 || e.keyCode === 23) {
-        onActivate(e);
-      }
-    });
-
-    target.insertAdjacentElement("afterend", musicBtn);
-  };
-
-  const startMusicButtonMonitoring = () => {
-    setInterval(injectMusicModeButton, 500);
-    if (window.MutationObserver) {
-      const observer = new MutationObserver(() => injectMusicModeButton());
-      observer.observe(document.body || document.documentElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
-  };
-
-  // Expose globally for test page
-  window.ttToggleMusicMode = toggleMusicMode;
 
   // === Apply saved speed on playback start ===
   const hookPlaybackRate = () => {
@@ -1110,14 +903,42 @@
     hookPlaybackRate();
     hookKeybind();
     startVideoMonitoring();
-    startMusicButtonMonitoring();
 
     window.ttSpeedSettings = speedSettings;
     window.ttEqSettings = eqSettings;
     window.ttCustomEqPanel = showCustomEqualizerPanel;
-    window.ttToggleMusicMode = toggleMusicMode;
   };
 
   boot();
 })();
 
+// === Dark Professional Gradient for #container ===
+(() => {
+  const applyGradient = () => {
+    const el = document.getElementById("container");
+    if (!el) {
+      console.warn("Element with id 'container' not found.");
+      return false;
+    }
+
+    // Main dark gradient (TV-style)
+    el.style.background = `
+      linear-gradient(
+        90deg,
+        #0f0f0f 20%,
+        #161b22 45%,
+#24283b 65%,
+#2f2438 100%
+      )
+    `;
+    return true;
+  };
+
+  // Retry if DOM not ready
+  if (!applyGradient()) {
+    const observer = new MutationObserver(() => {
+      if (applyGradient()) observer.disconnect();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();
